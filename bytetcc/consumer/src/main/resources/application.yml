@@ -1,0 +1,64 @@
+server:
+  port: 8763
+
+# datasource
+spring:
+  profiles:
+    active: standalone
+#    active: docker
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/consumer
+    username: root
+    password: root
+    continue-on-error: false
+    tomcat:
+      max-active: 50
+      initial-size: 20
+      min-idle: 6
+#      记录abandoned信息
+      log-abandoned: true
+      remove-abandoned: true
+      remove-abandoned-timeout: 1800
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-connect: false
+      test-on-return: false
+      validation-query: "select 'x' "
+      validation-query-timeout: 1
+      log-validation-errors: true
+      time-between-eviction-runs-millis: 30000
+      num-tests-per-eviction-run: 20
+# 默认值保存在 additional-spring-configuration-metadata.json
+# 默认日志为logback,默认xml配置文件在org.springframework.boot.logging.logback 目录下面
+logging:
+  level: info
+  file: logs/${spring.application.name}.log
+
+---
+spring:
+  profiles: standalone
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.cloud.client.ipAddress}:${spring.application.name}:${server.port}
+    lease-expiration-duration-in-seconds: 60
+    lease-renewal-interval-in-seconds: 30
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+
+---
+spring:
+  profiles: docker
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 172.16.0.8
+    instance-id: ${spring.cloud.client.ipAddress}:${spring.application.name}:${server.port}
+    lease-expiration-duration-in-seconds: 60
+    lease-renewal-interval-in-seconds: 30
+  client:
+    serviceUrl:
+      defaultZone: http://172.16.0.6:8761/eureka/
